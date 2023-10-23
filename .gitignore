@@ -2,3 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+top-spotify-songs-from-20102019-by-year.Rds
+top-spotify-hits-2000-2019.Rds
+dropout.Rds
+Dplyr_lab_files

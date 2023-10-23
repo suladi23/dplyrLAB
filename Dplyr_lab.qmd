@@ -1,0 +1,151 @@
+---
+title: "dplyr_LAB1"
+format: html
+editor: visual
+---
+
+```{r}
+#| echo: false
+#| message: false
+here::i_am("dplyr_LAB.Rproj")
+library(here)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+spotify <- readRDS(here("top-spotify-hits-2000-2019.Rds"))
+spotify1 <- readRDS(here("top-spotify-songs-from-20102019-by-year.Rds"))
+dropout <- readRDS(here("dropout.Rds"))
+```
+
+## Exercise 1
+
+### Question 1
+```{r}
+#| echo: false
+#| message: false
+N1 <- spotify |>
+        distinct(song) |>
+        summarise(N1=n())
+```
+
+```{r}
+#| echo: false
+#| message: false
+N2 <- spotify |>
+        distinct(artist) |>
+        summarise(N2=n())
+```
+
+```{r}
+#| echo: false
+#| message: false
+N3 <- spotify |>
+        distinct(genre) |>
+        summarise(N3=n())
+```
+
+The data set contains `r N1` songs, `r N2` artists and `r N3` genre
+
+### Question 2
+```{r}
+#| echo: false
+#| message: false
+spotify |>
+  group_by(year) |>
+  summarise(n()) |>
+knitr::kable()
+```
+
+### Question 3
+```{r}
+#| echo: false
+#| message: false
+sp_popular <- spotify |> 
+  distinct(song, artist) |>
+  group_by(artist) |>
+  summarise(N=n()) |>
+  arrange(-N) |>
+  slice(1)
+```
+
+The artist with the most song (`r sp_popular[2]`) is `r sp_popular[1]`
+
+### Question 4
+```{r}
+#| echo: false
+#| message: false
+spotify |>
+  distinct(genre, tempo) |>
+  group_by(genre) |>
+  summarise(min(tempo), max(tempo), mean(tempo), median(tempo),n()) |>
+  knitr::kable()
+```
+
+```{r}
+#| echo: false
+#| message: false
+medenergydance <- spotify1 |>
+  group_by(year) |>
+  summarize(Energy=median(nrgy), dance=(median(dnce)))
+```
+
+### Question 6
+```{r}
+#| echo: false
+#| message: false
+ggplot(medenergydance, aes(x=year)) +
+  geom_line(aes(y=Energy), color="green") +
+  geom_line(aes(y=dance), color="blue") +
+  labs(x="Years", y="Median")
+```
+
+## Exercise 2
+
+### Question 1
+```{r}
+#| echo: false
+#| message: false
+frame1 <- dropout |>
+  group_by(Gender, `Marital status`) |>
+  summarise(`Median age`=median(`Age at enrollment`))
+knitr::kable(frame1)
+```
+
+### Question 2
+```{r}
+#| echo: false
+#| message: false
+frame1L <- frame1 |>
+  pivot_wider(names_from=Gender, values_from=`Median age`)
+knitr::kable(frame1L)
+
+# Can't figure out why it says that "Could not find function pivot_wider", eventhough I have the packages needed
+```
+
+### Question 3
+```{r}
+#| echo: false
+#| message: false
+curricular <- dropout |>
+  select(Target, `Curricular units 1st sem (approved)`, 
+         `Curricular units 1st sem (evaluations)`)
+
+curricular_mean <- curricular |>
+  group_by(Target) |>
+  summarise(across(where(is.numeric),mean))
+  
+knitr::kable(curricular_mean)
+```
+
+### Question 4
+```{r}
+#| echo: false
+#| message: false
+pivot_curricular_mean <- curricular_mean |>
+  pivot_longer(starts_with("Curricular unit"), names_to= "Units") |>
+  pivot_wider(names_from=Target)
+knitr::kable(pivot_curricular_mean)
+
+# Same problem with the pivot functions, in our last class it was working
+```
+
